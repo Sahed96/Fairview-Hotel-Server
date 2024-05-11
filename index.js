@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 require('dotenv').config()
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 // middleware
 app.use(cors());
@@ -26,13 +26,21 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
 
-    const roomCollection = client.db('roomsDB').collection('rooms')
+    const roomCollection = client.db('roomsDB').collection('allRooms')
 
-    app.get('/rooms', async (req, res) =>{
+    app.get('/allRooms', async (req, res) =>{
       const cursor = roomCollection.find();
       const result = await cursor.toArray();
       res.send(result);
   })
+
+  app.get('/allRooms/:id', async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) }
+
+    const result = await roomCollection.findOne(query);
+    res.send(result);
+})
     
     await client.connect();
     // Send a ping to confirm a successful connection
