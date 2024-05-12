@@ -52,6 +52,13 @@ app.get('/bookedRoom', async (req, res) => {
   res.send(result)
 })
 
+app.get('/bookedRoom/:id', async (req, res) => {
+  const id = req.params.id
+  const query = {_id: new ObjectId(id)}
+  const result = await bookingCollection.findOne(query)
+  res.send(result)
+})
+
   app.post('/bookedRoom', async (req, res) => {
     const bookRoom = req.body;
     console.log(bookRoom);
@@ -66,7 +73,22 @@ app.get('/bookedRoom', async (req, res) => {
     res.send(result)
   })
 
-  
+  app.patch('/update/:id', async (req , res) => {
+    const id = req.params.id
+    const filter = {_id: new ObjectId(id)}
+    const changeDate = req.body
+    console.log(changeDate);
+    const updatedData = {
+      $set:{
+        dateFrom: changeDate.dateFrom,
+        dateTo: changeDate.dateTo
+        
+      }
+    }
+    const result = await bookingCollection.updateOne(filter, updatedData);
+      res.send(result)
+  })
+
     
     await client.connect();
     // Send a ping to confirm a successful connection
