@@ -58,6 +58,15 @@ app.get('/bookedRoom', async (req, res) => {
     const result = await bookingCollection.insertOne(bookRoom)
     res.send(result)
   })
+
+  app.delete('/bookedRoom/:id', async (req, res) => {
+    const id = req.params.id
+    const query = {_id: new ObjectId(id)}
+    const result = await bookingCollection.deleteOne(query)
+    res.send(result)
+  })
+
+  
     
     await client.connect();
     // Send a ping to confirm a successful connection
