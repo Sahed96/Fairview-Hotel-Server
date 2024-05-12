@@ -27,6 +27,7 @@ async function run() {
   try {
 
     const roomCollection = client.db('roomsDB').collection('allRooms')
+    const bookingCollection = client.db('roomsDB').collection('bookedRoom')
 
     app.get('/allRooms', async (req, res) =>{
       const cursor = roomCollection.find();
@@ -41,6 +42,22 @@ async function run() {
     const result = await roomCollection.findOne(query);
     res.send(result);
 })
+
+app.get('/bookedRoom', async (req, res) => {
+  let query = {};
+  if(req.query?.email){
+    query = {email: req.query.email}
+  }
+  const result = await bookingCollection.find(query).toArray()
+  res.send(result)
+})
+
+  app.post('/bookedRoom', async (req, res) => {
+    const bookRoom = req.body;
+    console.log(bookRoom);
+    const result = await bookingCollection.insertOne(bookRoom)
+    res.send(result)
+  })
     
     await client.connect();
     // Send a ping to confirm a successful connection
