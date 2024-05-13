@@ -28,6 +28,7 @@ async function run() {
 
     const roomCollection = client.db('roomsDB').collection('allRooms')
     const bookingCollection = client.db('roomsDB').collection('bookedRoom')
+    const reviewCollection = client.db('roomsDB').collection('feedBack')
 
     app.get('/allRooms', async (req, res) =>{
       const cursor = roomCollection.find();
@@ -63,6 +64,14 @@ app.get('/bookedRoom/:id', async (req, res) => {
     const bookRoom = req.body;
     console.log(bookRoom);
     const result = await bookingCollection.insertOne(bookRoom)
+    res.send(result)
+  })
+
+  app.post('/review/:id', async (req, res) => {
+    const addComment = req.body;
+    const id = req.params.id
+    const query = {_id: new ObjectId(id)}
+    const result = await reviewCollection.insertOne(addComment,query)
     res.send(result)
   })
 
