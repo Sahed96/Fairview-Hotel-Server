@@ -35,6 +35,11 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
   })
+    app.get('/allReview', async (req, res) =>{
+      const cursor = reviewCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+  })
 
   app.get('/allRooms/:id', async (req, res) => {
     const id = req.params.id;
@@ -44,6 +49,34 @@ async function run() {
     res.send(result);
 })
 
+app.patch('/availability/:id', async (req,res) => {
+  const id = req.params.id
+  // const status = false
+  const query = { _id: new ObjectId(id) }
+  const data = {
+    $set:{
+      availability: 'unavailable'
+    }
+  }
+  const result = await roomCollection.updateOne(query,data)
+  res.send(result)
+})
+
+
+app.patch('/unavailability/:id', async (req,res) => {
+  const id = req.params.id
+  console.log(id);
+  // const status = false
+  const query = { _id: new ObjectId(id) }
+  const data = {
+    $set:{
+      availability: 'available'
+    }
+  }
+  const result = await roomCollection.updateOne(query,data)
+  res.send(result)
+})
+
 app.get('/bookedRoom', async (req, res) => {
   let query = {};
   if(req.query?.email){
@@ -51,6 +84,11 @@ app.get('/bookedRoom', async (req, res) => {
   }
   const result = await bookingCollection.find(query).toArray()
   res.send(result)
+})
+
+app.get('/specialRoom', async (req, res) =>{
+  const result = await roomCollection.find({status: 'FEATURED'}).toArray();
+  res.send(result);
 })
 
 app.get('/bookedRoom/:id', async (req, res) => {
