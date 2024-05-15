@@ -12,8 +12,8 @@ app.use(cors({
   origin: [
     "http://localhost:5173",
     "http://localhost:5174",
-    "https://fairview-hotel-c14d2.web.app/",
-    "https://fairview-hotel-c14d2.firebaseapp.com/",
+    "https://fairview-hotel-c14d2.web.app",
+    "https://fairview-hotel-c14d2.firebaseapp.com",
   ],
   credentials: true,
 }));
@@ -21,6 +21,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 
+//localhost:5000 and localhost:5173 are treated as same site.  so sameSite value must be strict in development server.  in production sameSite will be none
+// in development server secure will false .  in production secure will be true
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@sahed96.5o5zjc5.mongodb.net/?retryWrites=true&w=majority&appName=Sahed96`;
@@ -54,18 +56,17 @@ const verifyToken = async (req ,res , next) => {
   })
 }
 
-// const cookieOptions = {
-//   httpOnly: true,
-//   secure: true,
-//   sameSite: 'none',
-// };
 
-const logger = (req, res, next) => {
-  console.log('log: info',req.method, req.url);
-  next()
-}
+
 
 async function run() {
+
+  const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+  };
+  
   try {
 
     const roomCollection = client.db('roomsDB').collection('allRooms')
@@ -89,15 +90,15 @@ async function run() {
     const user = req.body;
     console.log("user for token", user);
     const token = jwt.sign(user, process.env.ACCESS_TOKEN, {expiresIn: '2h'});
-    res
-    .cookie('token',token,{
-      httpOnly: true,
-      secure:true,
-      sameSite: 'none'
-    })
-    .send({success: true})
+    // res
+    // .cookie('token',token,{
+    //   httpOnly: true,
+    //   secure:true,
+    //   sameSite: 'none'
+    // })
+    // .send({success: true})
   
-    // res.cookie("token", token).send({ success: true });
+    res.cookie("token", token, cookieOptions).send({ success: true });
   });
 
   // remove token
@@ -105,14 +106,14 @@ async function run() {
     const user = req.body;
     console.log("logging out", user);
     res
-      .clearCookie("token", { maxAge: 0 })
+      .clearCookie("token", { ...cookieOptions, maxAge: 0 })
       .send({ success: true });
   });
 
   app.get('/detailsReview/:id', async (req,res) => {
     const id = req.params.id
     console.log(id);
-    const result= await reviewCollection.findOne({ratingId: id})
+    const result= await reviewCollection.find({ratingId: id}).toArray()
     res.send(result)
   })
 
@@ -165,7 +166,7 @@ app.patch('/unavailability/:id', async (req,res) => {
   res.send(result)
 })
 
-app.get('/bookedRoom',logger,verifyToken, async (req, res) => {
+app.get('/bookedRoom',verifyToken, async (req, res) => {
   console.log('owner info',req.user);
   if(req.user.email !== req.query.email){
     return res.status(403).send({message: 'forbidden access'})
@@ -183,7 +184,7 @@ app.get('/specialRoom', async (req, res) =>{
   res.send(result);
 })
 
-app.get('/bookedRoom/:id', async (req, res) => {
+app.get('/bookedRoom/:id',verifyToken, async (req, res) => {
   const id = req.params.id
   const query = {_id: new ObjectId(id)}
   const result = await bookingCollection.findOne(query)
@@ -229,9 +230,9 @@ app.get('/bookedRoom/:id', async (req, res) => {
   })
 
     
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
