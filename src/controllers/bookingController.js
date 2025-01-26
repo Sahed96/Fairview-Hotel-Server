@@ -1,6 +1,9 @@
-const { client } = require('../config/database');
-const { ObjectId } = require('mongodb');
-const bookingCollection = client.db('roomsDB').collection('bookedRoom');
+// const { client } = require('../config/database');
+// const { ObjectId } = require('mongodb');
+// const bookingCollection = client.db('roomsDB').collection('bookedRoom');
+
+const { ObjectId } = require("mongodb");
+const { bookingCollection } = require("../model/bookedRoomModel");
 
 // Get all booked rooms for a user
 const getAllBookedRooms = async (req, res) => {
