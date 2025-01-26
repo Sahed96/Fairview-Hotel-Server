@@ -26,6 +26,16 @@ const updateAvailability = async (req, res) => {
   res.send(result);
 };
 
+const updateUnavailability = async (req, res) => {
+  const id = req.params.id;
+  const availability = req.body.availability || 'available';
+  const result = await roomCollection.updateOne(
+    { _id: new ObjectId(id) },
+    { $set: { availability } }
+  );
+  res.send(result);
+};
+
 const getSpecialRooms = async (req, res) => {
   const rooms = await roomCollection.find({ status: 'FEATURED' }).toArray();
   res.send(rooms);
@@ -50,4 +60,5 @@ module.exports = {
   updateAvailability,
   getSpecialRooms,
   getSortedRooms,
+  updateUnavailability,
 };
